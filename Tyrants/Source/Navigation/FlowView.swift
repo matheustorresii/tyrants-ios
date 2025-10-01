@@ -5,10 +5,13 @@ struct FlowView: View {
     
     var body: some View {
         NavigationStack(path: $appCoordinator.path) {
-            appCoordinator.build(route: .defaultRoute)
+            appCoordinator.build(route: appCoordinator.rootRoute)
                 .navigationDestination(for: FlowRoute.self) { route in
                     appCoordinator.build(route: route)
                 }
+        }
+        .fullScreenCover(item: $appCoordinator.presentedRoute) { route in
+            appCoordinator.build(route: route)
         }
         .environment(\.appCoordinator, appCoordinator)
         .environment(\.colorScheme, .light)

@@ -2,34 +2,29 @@ import Foundation
 
 enum FlowNavigationStyle {
     case push(FlowRoute)
+    case replace(FlowRoute)
+    case present(FlowRoute)
     case pop
 }
 
-enum FlowRoute {
+enum FlowRoute: Hashable, Identifiable {
     case home
     case news
+    case map
+    case bag
+    case scene
     
     static var defaultRoute: FlowRoute {
         return .home
     }
-}
-
-extension FlowRoute: Hashable {
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        switch (lhs, rhs) {
-        case (.home, .home), (.news, .news):
-            return true
-        default:
-            return false
-        }
-    }
     
-    func hash(into hasher: inout Hasher) {
+    var id: String {
         switch self {
-        case .home:
-            hasher.combine(1)
-        case .news:
-            hasher.combine(2)
+        case .home: "HOME"
+        case .news: "NEWS"
+        case .map: "MAP"
+        case .bag: "BAG"
+        case .scene: "SCENE"
         }
     }
 }

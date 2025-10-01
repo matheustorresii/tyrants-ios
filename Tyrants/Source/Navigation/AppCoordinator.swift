@@ -11,6 +11,10 @@ final class AppCoordinator: ObservableObject, AppCoordinatorProtocol {
     
     @Published
     var path: NavigationPath
+    @Published
+    var rootRoute: FlowRoute = .defaultRoute
+    @Published
+    var presentedRoute: FlowRoute?
     
     // MARK: - PRIVATE PROPERTIES
     
@@ -33,18 +37,28 @@ final class AppCoordinator: ObservableObject, AppCoordinatorProtocol {
         switch style {
         case .push(let route):
             path.append(route)
+        case .replace(let route):
+            path = NavigationPath()
+            rootRoute = route
+        case .present(let route):
+            presentedRoute = route
         case .pop:
-            path.removeLast()
+            if !path.isEmpty {
+                path.removeLast()
+            }
         }
     }
     
     // MARK: - PRIVATE METHODS
     
-    private func viewFor(route: FlowRoute) -> any View {
+    @ViewBuilder
+    private func viewFor(route: FlowRoute) -> some View {
         switch route {
         case .home:
             HomeScreen()
         case .news:
+            NewsScreen()
+        default:
             NewsScreen()
         }
     }
