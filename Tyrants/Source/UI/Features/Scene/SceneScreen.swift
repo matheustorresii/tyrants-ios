@@ -5,7 +5,11 @@ struct SceneScreen: View {
     // MARK: - BODY
     
     var body: some View {
-        Text("Scene")
+        ZStack {
+            Color.gray.opacity(0.2).ignoresSafeArea()
+            FloatingCloseButtonWrapper()
+            Text("Scene")
+        }
     }
 }
 

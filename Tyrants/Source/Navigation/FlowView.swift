@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FlowView: View {
     @StateObject private var appCoordinator = AppCoordinator()
+    private let dataPersistenceManager = DataPersistenceManager()
     
     var body: some View {
         NavigationStack(path: $appCoordinator.path) {
@@ -16,6 +17,7 @@ struct FlowView: View {
             appCoordinator.build(route: route)
         }
         .environment(\.appCoordinator, appCoordinator)
+        .environment(\.dataPersistence, dataPersistenceManager)
         .environment(\.colorScheme, .light)
     }
 }

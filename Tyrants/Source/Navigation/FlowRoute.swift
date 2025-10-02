@@ -8,6 +8,7 @@ enum FlowNavigationStyle {
 }
 
 enum FlowRoute: Hashable, Identifiable {
+    case launch
     case home
     case news
     case map
@@ -15,11 +16,12 @@ enum FlowRoute: Hashable, Identifiable {
     case scene
     
     static var defaultRoute: FlowRoute {
-        return .home
+        return .launch
     }
     
     var id: String {
         switch self {
+        case .launch: "LAUNCH"
         case .home: "HOME"
         case .news: "NEWS"
         case .map: "MAP"
@@ -33,6 +35,7 @@ extension FlowRoute {
     @ViewBuilder
     func makeScreen() -> some View {
         switch self {
+        case .launch: LaunchScreen()
         case .home: HomeScreen()
         case .news: NewsScreen()
         case .map: MapScreen()
