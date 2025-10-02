@@ -8,6 +8,8 @@ struct FlowView: View {
             appCoordinator.build(route: appCoordinator.rootRoute)
                 .navigationDestination(for: FlowRoute.self) { route in
                     appCoordinator.build(route: route)
+                        .navigationBarHidden(true)
+                        .navigationBarBackButtonHidden(true)
                 }
         }
         .fullScreenCover(item: $appCoordinator.presentedRoute) { route in

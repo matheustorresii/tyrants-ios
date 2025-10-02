@@ -1,4 +1,4 @@
-import Foundation
+import SwiftUI
 
 enum FlowNavigationStyle {
     case push(FlowRoute)
@@ -25,6 +25,19 @@ enum FlowRoute: Hashable, Identifiable {
         case .map: "MAP"
         case .bag: "BAG"
         case .scene: "SCENE"
+        }
+    }
+}
+
+extension FlowRoute {
+    @ViewBuilder
+    func makeScreen() -> some View {
+        switch self {
+        case .home: HomeScreen()
+        case .news: NewsScreen()
+        case .map: MapScreen()
+        case .bag: BagScreen()
+        case .scene: SceneScreen()
         }
     }
 }

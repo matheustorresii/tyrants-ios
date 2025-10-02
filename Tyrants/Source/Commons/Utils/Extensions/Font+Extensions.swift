@@ -1,8 +1,8 @@
 import SwiftUI
 
 extension Font {
-    static func jersey15(size: CGFloat) -> Font {
-        return .custom("Jersey15", size: size)
+    static func pressStart(size: CGFloat) -> Font {
+        return .custom("PressStart2P-Regular", size: size)
     }
     
     static func sixtyfour(size: CGFloat) -> Font {

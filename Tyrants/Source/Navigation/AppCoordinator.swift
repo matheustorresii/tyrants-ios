@@ -30,7 +30,7 @@ final class AppCoordinator: ObservableObject, AppCoordinatorProtocol {
     
     @ViewBuilder
     func build(route: FlowRoute) -> some View {
-        viewFor(route: route).toAny()
+        route.makeScreen().toAny()
     }
     
     func navigate(_ style: FlowNavigationStyle) {
@@ -46,20 +46,6 @@ final class AppCoordinator: ObservableObject, AppCoordinatorProtocol {
             if !path.isEmpty {
                 path.removeLast()
             }
-        }
-    }
-    
-    // MARK: - PRIVATE METHODS
-    
-    @ViewBuilder
-    private func viewFor(route: FlowRoute) -> some View {
-        switch route {
-        case .home:
-            HomeScreen()
-        case .news:
-            NewsScreen()
-        default:
-            NewsScreen()
         }
     }
 }
