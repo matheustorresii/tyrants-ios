@@ -10,7 +10,7 @@ final class NetworkOperation: NetworkOperationProtocol {
     // MARK: - PRIVATE PROPERTIES
     
     private var baseUrl: String {
-        "http://localhost:8080/"
+        "http://192.168.18.229:8080/"
     }
     
     // MARK: - PUBLIC METHODS
