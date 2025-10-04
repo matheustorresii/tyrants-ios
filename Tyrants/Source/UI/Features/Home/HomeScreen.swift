@@ -5,47 +5,7 @@ struct HomeScreen: View {
     // MARK: - PUBLIC PROPERTIES
     
     @Environment(\.appCoordinator) var appCoordinator
-    
-    // MARK: - PRIVATE PROPERTIES
-    
-    private let buttons: [(route: FlowRoute, dto: HomeButtonDTO)] = [
-        (
-            route: .news,
-            dto: .init(
-                image: "news-icon",
-                title: "NEWS",
-                color: .purple,
-                textColor: .white
-            )
-        ),
-        (
-            route: .map,
-            dto: .init(
-                image: "map-icon",
-                title: "MAP",
-                color: .green,
-                textColor: .white
-            )
-        ),
-        (
-            route: .bag,
-            dto: .init(
-                image: "bag-icon",
-                title: "BAG",
-                color: .orange,
-                textColor: .white
-            )
-        ),
-        (
-            route: .scene,
-            dto: .init(
-                image: "scene-icon",
-                title: "SCENE",
-                color: .red,
-                textColor: .white
-            )
-        )
-    ]
+    @Environment(\.sessionManager) var sessionManager
     
     // MARK: - BODY
     
@@ -57,6 +17,7 @@ struct HomeScreen: View {
     
     @ViewBuilder
     private func makeButtonContainers() -> some View {
+        let buttons = createButtonValues()
         VStack(spacing: 0) {
             ForEach(0..<buttons.count, id: \.self) { index in
                 if index.isMultiple(of: 2) {
@@ -85,7 +46,59 @@ struct HomeScreen: View {
         } content: {
             HomeButton(dto: dto)
         }
-
+    }
+    
+    private func createButtonValues() -> [(
+        route: FlowRoute,
+        dto: HomeButtonDTO
+    )] {
+        var result: [(route: FlowRoute, dto: HomeButtonDTO)] = [
+            (
+                route: .news,
+                dto: .init(
+                    image: "news-icon",
+                    title: "NEWS",
+                    color: .orange,
+                    textColor: .white
+                )
+            )
+        ]
+        if false {
+            result.append(
+                (
+                    route: .map,
+                    dto: .init(
+                        image: "map-icon",
+                        title: "MAP",
+                        color: .green,
+                        textColor: .white
+                    )
+                )
+            )
+        }
+        if let tyrant = sessionManager.login?.tyrant {
+            result.append((
+                route: .scene,
+                dto: .init(
+                    image: "spirit-icon",
+                    title: "SPIRIT",
+                    color: .cyan,
+                    textColor: .white
+                )
+            ))
+        }
+        result.append(
+            (
+                route: .scene,
+                dto: .init(
+                    image: "scene-icon",
+                    title: "SCENE",
+                    color: .red,
+                    textColor: .white
+                )
+            )
+        )
+        return result
     }
 }
 

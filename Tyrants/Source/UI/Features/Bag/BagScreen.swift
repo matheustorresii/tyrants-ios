@@ -7,8 +7,8 @@ struct BagScreen: View {
     
     var body: some View {
         ZStack {
-            if let login = sessionManager.login {
-                makeBody(login: login)
+            if let tyrant = sessionManager.login?.tyrant {
+                makeBody(tyrant: tyrant)
             } else {
                 Text("Erro, xinga o torres")
                     .font(.tiny5(size: 20))
@@ -18,20 +18,20 @@ struct BagScreen: View {
     }
     
     @ViewBuilder
-    private func makeBody(login: LoginResponse) -> some View {
+    private func makeBody(tyrant: TyrantModel) -> some View {
         ScrollView {
             VStack(spacing: 0) {
                 ZStack {
                     Color.gray.opacity(0.2).ignoresSafeArea()
                     GeometryReader { proxy in
-                        GifImage(name: "\(login.tyrant.asset)-background")
+                        GifImage(name: "\(tyrant.asset)-background")
                             .frame(width: proxy.size.width + 10)
                         Rectangle()
                             .fill(.gray)
                             .frame(height: 1)
                             .offset(y: proxy.size.height)
                     }
-                    GifImage(name: login.tyrant.asset)
+                    GifImage(name: tyrant.asset)
                         .frame(width: 160, height: 160)
                         .rotation3DEffect(.degrees(180), axis: (0, 1, 0))
                         .offset(y: 36)
@@ -41,10 +41,10 @@ struct BagScreen: View {
                 Spacer().frame(height: 16)
                 VStack(alignment: .center, spacing: 0) {
                     Spacer().frame(height: 24)
-                    Text(login.tyrant.id.capitalized)
+                    Text(tyrant.id.capitalized)
                         .font(.pressStart(size: 30))
                     Spacer().frame(height: 8)
-                    buildStatsViews(login: login)
+                    buildStatsViews(tyrant)
                     Spacer().frame(height: 24)
                     HStack {
                         Spacer().frame(width: 24)
@@ -72,7 +72,7 @@ struct BagScreen: View {
     }
     
     @ViewBuilder
-    private func buildStatsViews(login: LoginResponse) -> some View {
+    private func buildStatsViews(_ tyrant: TyrantModel) -> some View {
         VStack(alignment: .trailing, spacing: 0) {
             HStack {
                 Text("HP")
@@ -80,7 +80,7 @@ struct BagScreen: View {
 
                 ZStack {
                     Color.green.opacity(0.6)
-                    Text(String(format: "%03d", login.tyrant.hp))
+                    Text(String(format: "%03d", tyrant.hp))
                         .font(.pressStart(size: 18))
                         .padding(8)
                 }
@@ -92,7 +92,7 @@ struct BagScreen: View {
 
                 ZStack {
                     Color.yellow.opacity(0.3)
-                    Text(String(format: "%03d", login.tyrant.attack))
+                    Text(String(format: "%03d", tyrant.attack))
                         .font(.pressStart(size: 18))
                         .padding(8)
                 }
@@ -104,7 +104,7 @@ struct BagScreen: View {
 
                 ZStack {
                     Color.blue.opacity(0.4)
-                    Text(String(format: "%03d", login.tyrant.magic))
+                    Text(String(format: "%03d", tyrant.magic))
                         .font(.pressStart(size: 18))
                         .padding(8)
                 }
@@ -116,7 +116,7 @@ struct BagScreen: View {
 
                 ZStack {
                     Color.orange.opacity(0.5)
-                    Text(String(format: "%03d", login.tyrant.defense))
+                    Text(String(format: "%03d", tyrant.defense))
                         .font(.pressStart(size: 18))
                         .padding(8)
                 }
@@ -128,7 +128,7 @@ struct BagScreen: View {
 
                 ZStack {
                     Color.purple.opacity(0.4)
-                    Text(String(format: "%03d", login.tyrant.speed))
+                    Text(String(format: "%03d", tyrant.speed))
                         .font(.pressStart(size: 18))
                         .padding(8)
                 }
@@ -150,7 +150,7 @@ struct BagScreen: View {
                 name: "Pulga owner",
                 tyrant: .init(
                     id: "mystelune",
-                    asset: "crimsonor",
+                    asset: "fenryl",
                     evolutions: nil,
                     attacks: [
                         .init(
