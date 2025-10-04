@@ -8,7 +8,6 @@ struct TyrantModel: Codable  {
     let attacks: [TyrantAttack]?
     let hp: Int
     let attack: Int
-    let magic: Int
     let defense: Int
     let speed: Int
     
@@ -20,7 +19,6 @@ struct TyrantModel: Codable  {
         attacks: [TyrantAttack]? = nil,
         hp: Int,
         attack: Int,
-        magic: Int,
         defense: Int,
         speed: Int
     ) {
@@ -31,7 +29,6 @@ struct TyrantModel: Codable  {
         self.attacks = attacks
         self.hp = hp
         self.attack = attack
-        self.magic = magic
         self.defense = defense
         self.speed = speed
     }

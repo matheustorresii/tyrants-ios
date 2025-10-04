@@ -73,8 +73,8 @@ struct BagScreen: View {
     
     @ViewBuilder
     private func buildStatsViews(_ tyrant: TyrantModel) -> some View {
-        VStack(alignment: .trailing, spacing: 0) {
-            HStack {
+        HStack(spacing: 0) {
+            VStack(spacing: 0) {
                 Text("HP")
                     .font(.tiny5(size: 30))
 
@@ -84,45 +84,33 @@ struct BagScreen: View {
                         .font(.pressStart(size: 18))
                         .padding(8)
                 }
-                .frame(width: 80)
+                .frame(width: 70)
             }
-            HStack {
+            VStack(spacing: 0) {
                 Text("ATK")
                     .font(.tiny5(size: 30))
 
                 ZStack {
-                    Color.yellow.opacity(0.3)
+                    Color.orange.opacity(0.6)
                     Text(String(format: "%03d", tyrant.attack))
                         .font(.pressStart(size: 18))
                         .padding(8)
                 }
-                .frame(width: 80)
+                .frame(width: 70)
             }
-            HStack {
-                Text("MGC")
-                    .font(.tiny5(size: 30))
-
-                ZStack {
-                    Color.blue.opacity(0.4)
-                    Text(String(format: "%03d", tyrant.magic))
-                        .font(.pressStart(size: 18))
-                        .padding(8)
-                }
-                .frame(width: 80)
-            }
-            HStack {
+            VStack(spacing: 0) {
                 Text("DEF")
                     .font(.tiny5(size: 30))
 
                 ZStack {
-                    Color.orange.opacity(0.5)
+                    Color.cyan.opacity(0.5)
                     Text(String(format: "%03d", tyrant.defense))
                         .font(.pressStart(size: 18))
                         .padding(8)
                 }
-                .frame(width: 80)
+                .frame(width: 70)
             }
-            HStack {
+            VStack(spacing: 0) {
                 Text("SPD")
                     .font(.tiny5(size: 30))
 
@@ -132,7 +120,7 @@ struct BagScreen: View {
                         .font(.pressStart(size: 18))
                         .padding(8)
                 }
-                .frame(width: 80)
+                .frame(width: 70)
             }
         }
     }
@@ -149,7 +137,7 @@ struct BagScreen: View {
                 id: "LITTLE-FLE",
                 name: "Pulga owner",
                 tyrant: .init(
-                    id: "mystelune",
+                    id: "a",
                     asset: "fenryl",
                     evolutions: nil,
                     attacks: [
@@ -162,7 +150,6 @@ struct BagScreen: View {
                     ],
                     hp: 10,
                     attack: 10,
-                    magic: 10,
                     defense: 10,
                     speed: 10
                 ),
