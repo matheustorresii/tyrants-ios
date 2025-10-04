@@ -1,9 +1,9 @@
 import Foundation
 
 final class SessionManager {
-    var login: LoginModel?
+    var login: LoginResponse?
     
-    init(login: LoginModel? = nil) {
+    init(login: LoginResponse? = nil) {
         self.login = login
     }
 }

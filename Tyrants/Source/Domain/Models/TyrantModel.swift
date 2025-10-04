@@ -1,7 +1,7 @@
 import Foundation
 
 struct TyrantModel: Codable  {
-    let name: String
+    let id: String
     let nickname: String?
     let asset: String
     let evolutions: [String]?
@@ -13,7 +13,7 @@ struct TyrantModel: Codable  {
     let speed: Int
     
     init(
-        name: String,
+        id: String,
         nickname: String? = nil,
         asset: String,
         evolutions: [String]? = nil,
@@ -24,7 +24,7 @@ struct TyrantModel: Codable  {
         defense: Int,
         speed: Int
     ) {
-        self.name = name
+        self.id = id
         self.nickname = nickname
         self.asset = asset
         self.evolutions = evolutions

@@ -1,6 +1,10 @@
 import Foundation
 
-struct LoginModel: Codable {
+struct LoginRequest: Codable {
+    let id: String
+}
+
+struct LoginResponse: Codable {
     let id: String
     let name: String
     let tyrant: TyrantModel

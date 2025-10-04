@@ -18,7 +18,7 @@ struct BagScreen: View {
     }
     
     @ViewBuilder
-    private func makeBody(login: LoginModel) -> some View {
+    private func makeBody(login: LoginResponse) -> some View {
         ScrollView {
             VStack(spacing: 0) {
                 ZStack {
@@ -41,7 +41,7 @@ struct BagScreen: View {
                 Spacer().frame(height: 16)
                 VStack(alignment: .center, spacing: 0) {
                     Spacer().frame(height: 24)
-                    Text(login.tyrant.name.capitalized)
+                    Text(login.tyrant.id.capitalized)
                         .font(.pressStart(size: 30))
                     Spacer().frame(height: 8)
                     buildStatsViews(login: login)
@@ -72,7 +72,7 @@ struct BagScreen: View {
     }
     
     @ViewBuilder
-    private func buildStatsViews(login: LoginModel) -> some View {
+    private func buildStatsViews(login: LoginResponse) -> some View {
         VStack(alignment: .trailing, spacing: 0) {
             HStack {
                 Text("HP")
@@ -149,7 +149,7 @@ struct BagScreen: View {
                 id: "LITTLE-FLE",
                 name: "Pulga owner",
                 tyrant: .init(
-                    name: "mystelune",
+                    id: "mystelune",
                     asset: "crimsonor",
                     evolutions: nil,
                     attacks: [
