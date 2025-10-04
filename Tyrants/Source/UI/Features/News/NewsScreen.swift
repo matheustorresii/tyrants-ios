@@ -43,7 +43,8 @@ struct NewsScreen: View {
         VStack(spacing: 0) {
             HeaderView(title: "NEWS")
             ZStack {
-                Color.gray.opacity(0.3).ignoresSafeArea()
+                Color.yellow.opacity(0.5).ignoresSafeArea()
+                Color.black.opacity(0.5).ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 0) {
                         ForEach(mock, id: \.id) { mock in

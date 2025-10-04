@@ -1,18 +1,174 @@
 import SwiftUI
 
 struct BagScreen: View {
+    @Environment(\.sessionManager) var sessionManager
     
     // MARK: - BODY
     
     var body: some View {
         ZStack {
-            Color.gray.opacity(0.2).ignoresSafeArea()
+            if let login = sessionManager.login {
+                makeBody(login: login)
+            } else {
+                Text("Erro, xinga o torres")
+                    .font(.tiny5(size: 20))
+            }
             FloatingCloseButtonWrapper()
-            Text("Bag")
+        }
+    }
+    
+    @ViewBuilder
+    private func makeBody(login: LoginModel) -> some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                ZStack {
+                    Color.gray.opacity(0.2).ignoresSafeArea()
+                    GeometryReader { proxy in
+                        GifImage(name: "\(login.tyrant.asset)-background")
+                            .frame(width: proxy.size.width + 10)
+                        Rectangle()
+                            .fill(.gray)
+                            .frame(height: 1)
+                            .offset(y: proxy.size.height)
+                    }
+                    GifImage(name: login.tyrant.asset)
+                        .frame(width: 160, height: 160)
+                        .rotation3DEffect(.degrees(180), axis: (0, 1, 0))
+                        .offset(y: 36)
+                        .padding(.top, 150)
+                        .shadow(color: .black, radius: 5)
+                }
+                Spacer().frame(height: 16)
+                VStack(alignment: .center, spacing: 0) {
+                    Spacer().frame(height: 24)
+                    Text(login.tyrant.name.capitalized)
+                        .font(.pressStart(size: 30))
+                    Spacer().frame(height: 8)
+                    buildStatsViews(login: login)
+                    Spacer().frame(height: 24)
+                    HStack {
+                        Spacer().frame(width: 24)
+                        Text("Items:")
+                            .font(.pressStart(size: 22))
+                        Spacer()
+                    }
+                    Spacer().frame(height: 8)
+                    LazyVGrid(columns: [
+                        .init(.flexible()),
+                        .init(.flexible()),
+                        .init(.flexible()),
+                    ]) {
+                        ForEach(0..<9) { _ in
+                            Rectangle().aspectRatio(1, contentMode: .fit)
+                                .opacity(0.1)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                }
+                Spacer().frame(height: 40)
+            }
+        }
+        .ignoresSafeArea()
+    }
+    
+    @ViewBuilder
+    private func buildStatsViews(login: LoginModel) -> some View {
+        VStack(alignment: .trailing, spacing: 0) {
+            HStack {
+                Text("HP")
+                    .font(.tiny5(size: 30))
+
+                ZStack {
+                    Color.green.opacity(0.6)
+                    Text(String(format: "%03d", login.tyrant.hp))
+                        .font(.pressStart(size: 18))
+                        .padding(8)
+                }
+                .frame(width: 80)
+            }
+            HStack {
+                Text("ATK")
+                    .font(.tiny5(size: 30))
+
+                ZStack {
+                    Color.yellow.opacity(0.3)
+                    Text(String(format: "%03d", login.tyrant.attack))
+                        .font(.pressStart(size: 18))
+                        .padding(8)
+                }
+                .frame(width: 80)
+            }
+            HStack {
+                Text("MGC")
+                    .font(.tiny5(size: 30))
+
+                ZStack {
+                    Color.blue.opacity(0.4)
+                    Text(String(format: "%03d", login.tyrant.magic))
+                        .font(.pressStart(size: 18))
+                        .padding(8)
+                }
+                .frame(width: 80)
+            }
+            HStack {
+                Text("DEF")
+                    .font(.tiny5(size: 30))
+
+                ZStack {
+                    Color.orange.opacity(0.5)
+                    Text(String(format: "%03d", login.tyrant.defense))
+                        .font(.pressStart(size: 18))
+                        .padding(8)
+                }
+                .frame(width: 80)
+            }
+            HStack {
+                Text("SPD")
+                    .font(.tiny5(size: 30))
+
+                ZStack {
+                    Color.purple.opacity(0.4)
+                    Text(String(format: "%03d", login.tyrant.speed))
+                        .font(.pressStart(size: 18))
+                        .padding(8)
+                }
+                .frame(width: 80)
+            }
         }
     }
 }
 
 #Preview {
-    BagScreen()
+    ZStack {
+        BagScreen()
+    }
+    .environment(
+        \.sessionManager,
+         SessionManager(
+            login: .init(
+                id: "LITTLE-FLE",
+                name: "Pulga owner",
+                tyrant: .init(
+                    name: "mystelune",
+                    asset: "crimsonor",
+                    evolutions: nil,
+                    attacks: [
+                        .init(
+                            name: "Salto",
+                            power: 1,
+                            pp: 20,
+                            attributes: nil
+                        )
+                    ],
+                    hp: 10,
+                    attack: 10,
+                    magic: 10,
+                    defense: 10,
+                    speed: 10
+                ),
+                xp: 1,
+                items: nil
+            )
+         )
+    )
 }

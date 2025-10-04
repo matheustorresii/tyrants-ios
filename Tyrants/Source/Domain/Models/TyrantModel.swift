@@ -1,0 +1,50 @@
+import Foundation
+
+struct TyrantModel: Codable  {
+    let name: String
+    let nickname: String?
+    let asset: String
+    let evolutions: [String]?
+    let attacks: [TyrantAttack]?
+    let hp: Int
+    let attack: Int
+    let magic: Int
+    let defense: Int
+    let speed: Int
+    
+    init(
+        name: String,
+        nickname: String? = nil,
+        asset: String,
+        evolutions: [String]? = nil,
+        attacks: [TyrantAttack]? = nil,
+        hp: Int,
+        attack: Int,
+        magic: Int,
+        defense: Int,
+        speed: Int
+    ) {
+        self.name = name
+        self.nickname = nickname
+        self.asset = asset
+        self.evolutions = evolutions
+        self.attacks = attacks
+        self.hp = hp
+        self.attack = attack
+        self.magic = magic
+        self.defense = defense
+        self.speed = speed
+    }
+}
+
+struct TyrantAttack: Codable {
+    let name: String
+    let power: Int
+    let pp: Int
+    let attributes: [TyrantAttackAttributes]?
+}
+
+enum TyrantAttackAttributes: String, Codable {
+    case nerfAttack = "NERF_ATTACK"
+    case nerfDef = "NERF_DEF"
+}

@@ -5,31 +5,40 @@ struct NewsCard: View {
     
     var body: some View {
         ZStack {
-            Color.white
+            Color.yellow.opacity(0.9).ignoresSafeArea()
+            Color.black.opacity(0.2).ignoresSafeArea()
             VStack(alignment: .leading, spacing: 0) {
                 Text(dto.title)
                     .font(.tiny5(size: 32))
-                    .foregroundStyle(Color.black)
+                    .foregroundStyle(Color.white)
                 Spacer().frame(height: 4)
                 Image(dto.image.rawValue)
                     .resizable()
+                    .offset(x: -2, y: -2)
                     .scaledToFill()
-                Spacer().frame(height: 4)
+                    .background {
+                        Rectangle().fill(Color.black)
+                            .offset(x: 2, y: 2)
+                    }
+                Spacer().frame(height: 8)
                 Text(dto.content)
                     .lineSpacing(4)
                     .font(.pressStart(size: 12))
-                Spacer().frame(height: 4)
+                    .foregroundStyle(Color.white)
+                Spacer().frame(height: 8)
+                Rectangle()
+                    .fill(.white)
+                    .frame(height: 1)
+                Spacer().frame(height: 8)
                 HStack {
                     Text(dto.date)
                         .font(.tiny5(size: 12))
-                        .foregroundStyle(Color.gray)
+                        .foregroundStyle(Color.white)
                     Spacer()
                     if let category = dto.category {
                         Text(category)
                             .font(.tiny5(size: 12))
-                            .foregroundStyle([
-                                Color.blue, Color.purple, Color.red
-                            ].randomElement() ?? Color.gray)
+                            .foregroundStyle(Color.white)
                     }
                 }
             }
