@@ -18,7 +18,7 @@ struct SceneScreen: View {
             viewModel.connect(tyrantID: sessionManager.login?.tyrant?.id)
         }
         .onDisappear {
-            viewModel.disconnect()
+            viewModel.disconnect(tyrantID: sessionManager.login?.tyrant?.id)
         }
     }
     
@@ -26,7 +26,9 @@ struct SceneScreen: View {
     private func makeBody() -> some View {
         GeometryReader { containerProxy in
             ZStack {
-                if case .idle = viewModel.state {
+                if case .idle = viewModel.state,
+                   viewModel.currentVoting == nil,
+                   viewModel.currentBattle == nil {
                     makeIdle()
                     if sessionManager.isAdmin() {
                         Color.black.opacity(0.7).ignoresSafeArea()
@@ -41,7 +43,8 @@ struct SceneScreen: View {
                     makeImage(imageModel: image, proxy: containerProxy)
                 }
                 
-                if let model = viewModel.currentVoting {
+                if let model = viewModel.currentVoting,
+                   viewModel.currentBattle == nil {
                     if sessionManager.isAdmin() {
                         getVotingAdminView(voting: model.voting)
                     } else {
@@ -51,7 +54,10 @@ struct SceneScreen: View {
                 }
                 
                 if let battle = viewModel.currentBattle {
-                    Text("battle")
+                    ZStack {
+                        SceneBattleView(battle: battle)
+                        getVotingResultView(battle: battle)
+                    }
                 }
                 
                 if case .error = viewModel.state {
@@ -63,6 +69,28 @@ struct SceneScreen: View {
     }
     
     // MARK: - VOTING
+    
+    @ViewBuilder
+    private func getVotingResultView(battle: WSBattleStartedModel) -> some View {
+        if let _ = viewModel.currentVoting, let voting = battle.voting {
+            LoopingVideoPlayer(
+                videoName: "\(voting.toParty >= voting.untilDeath ? "TO_PARTY" : "UNTIL_DEATH")_RESULT",
+                videoType: "mp4"
+            )
+            .ignoresSafeArea()
+            .transition(
+                .asymmetric(
+                    insertion: .move(edge: voting.toParty >= voting.untilDeath ? .bottom : .top),
+                    removal: .move(edge: voting.toParty >= voting.untilDeath ? .top : .bottom)
+                )
+            )
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                    viewModel.currentVoting = nil
+                }
+            }
+        }
+    }
     
     @ViewBuilder
     private func getVotingAdminView(voting: WSVotingModel.Model) -> some View {

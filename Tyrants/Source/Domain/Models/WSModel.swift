@@ -38,6 +38,15 @@ struct WSJoinedModel: Codable {
     }
 }
 
+struct WSLeaveModel: Codable {
+    let leave: String // tyrant-id
+}
+
+struct WSLeftModel: Codable {
+    let left: String // tyrant-id
+    let turns: [WSTurnsModel]?
+}
+
 // MARK: - CLEAN
 
 struct WSCleanModel: Codable {
@@ -78,9 +87,27 @@ struct WSTyrantAttackModel: Codable {
 
 struct WSTyrantsModel: Codable {
     let id: String // tyrant-id
+    let asset: String
+    let enemy: Bool
     let fullHp: Int
     var currentHp: Int
     var attacks: [WSTyrantAttackModel]
+    
+    init(
+        id: String,
+        asset: String,
+        enemy: Bool = false,
+        fullHp: Int,
+        currentHp: Int,
+        attacks: [WSTyrantAttackModel]
+    ) {
+        self.id = id
+        self.asset = asset
+        self.enemy = enemy
+        self.fullHp = fullHp
+        self.currentHp = currentHp
+        self.attacks = attacks
+    }
 }
 
 struct WSFinishedBattleModel: Codable {
@@ -141,5 +168,5 @@ struct WSBattleStartedModel: Codable {
     let battle: String // tyrant-id
     let turns: [WSTurnsModel]
     var tyrants: [WSTyrantsModel]
-    let voting: Model
+    let voting: Model?
 }

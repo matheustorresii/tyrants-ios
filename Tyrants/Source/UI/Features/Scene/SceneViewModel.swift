@@ -36,7 +36,10 @@ final class SceneViewModel: ObservableObject {
         }
     }
     
-    func disconnect() {
+    func disconnect(tyrantID: String?) {
+        if let tyrantID {
+            send(model: WSLeaveModel(leave: tyrantID))
+        }
         wsService.disconnect()
     }
     
@@ -79,29 +82,42 @@ final class SceneViewModel: ObservableObject {
         print("WS: \(text)")
         Task { @MainActor [weak self] in
             guard let self else { return }
-            
-            if let decoded = decode(from: WSImageModel.self, with: text) {
-                state = .image(imageModel: decoded)
-            }
-            
-            if let decoded = decode(from: WSVotingModel.self, with: text) {
-                currentVoting = decoded
-            }
-            
-            if let decoded = decode(from: WSCleanModel.self, with: text) {
-                currentQueue = decoded.turns ?? []
-            }
-            
-            if let decoded = decode(from: WSJoinedModel.self, with: text) {
-                currentQueue = decoded.turns ?? []
-            }
-            
-            if let decoded = decode(from: WSBattleStartedModel.self, with: text) {
-                currentBattle =  decoded
-            }
-            
-            if let decoded = decode(from: WSUpdateStateModel.self, with: text) {
-                updateBattle(decoded)
+            withAnimation {
+                if let decoded = self.decode(from: WSImageModel.self, with: text) {
+                    self.state = .image(imageModel: decoded)
+                }
+                
+                if let decoded = self.decode(from: WSVotingModel.self, with: text) {
+                    self.currentVoting = decoded
+                }
+                
+                if let decoded = self.decode(from: WSCleanModel.self, with: text) {
+                    self.currentQueue = decoded.turns ?? []
+                }
+                
+                if let decoded = self.decode(from: WSJoinedModel.self, with: text) {
+                    self.currentQueue = decoded.turns ?? []
+                }
+                
+                if let decoded = self.decode(from: WSLeftModel.self, with: text) {
+                    self.currentQueue = decoded.turns ?? []
+                }
+                
+                if let decoded = self.decode(from: WSBattleStartedModel.self, with: text) {
+                    self.currentBattle = decoded
+                    if let voting = decoded.voting {
+                        self.currentVoting = .init(
+                            voting: .init(
+                                toParty: voting.toParty,
+                                untilDeath: voting.untilDeath
+                            )
+                        )
+                    }
+                }
+                
+                if let decoded = self.decode(from: WSUpdateStateModel.self, with: text) {
+                    self.updateBattle(decoded)
+                }
             }
         }
     }

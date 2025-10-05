@@ -32,13 +32,13 @@ struct BagScreen: View {
                             .offset(y: proxy.size.height)
                     }
                     GifImage(name: tyrant.asset)
-                        .frame(width: 160, height: 160)
-                        .rotation3DEffect(.degrees(180), axis: (0, 1, 0))
-                        .offset(y: 36)
-                        .padding(.top, 150)
+                        .frame(width: 260, height: 260)
+                        .scaleEffect(x: -1)
+                        .offset(y: 76)
+                        .padding(.top, 50)
                         .shadow(color: .black, radius: 5)
                 }
-                Spacer().frame(height: 16)
+                Spacer().frame(height: 40)
                 VStack(alignment: .center, spacing: 0) {
                     Spacer().frame(height: 24)
                     Text(tyrant.id.capitalized)
@@ -137,8 +137,8 @@ struct BagScreen: View {
                 id: "LITTLE-FLE",
                 name: "Pulga owner",
                 tyrant: .init(
-                    id: "umbryn",
-                    asset: "umbryn",
+                    id: "voltaire",
+                    asset: "voltaire",
                     evolutions: nil,
                     attacks: [
                         .init(
