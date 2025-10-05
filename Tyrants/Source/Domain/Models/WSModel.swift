@@ -38,43 +38,6 @@ struct WSJoinedModel: Codable {
     }
 }
 
-// MARK: - BATTLE
-
-struct WSTurnsModel: Codable {
-    let id: String // tyrant-id
-    let asset: String
-    let enemy: Bool
-}
-
-struct WSBattleModel: Codable {
-    let battle: String // tyrant-id
-    let voteEnabled: Bool
-    
-    init(
-        battle: String,
-        voteEnabled: Bool = false
-    ) {
-        self.battle = battle
-        self.voteEnabled = voteEnabled
-    }
-}
-
-struct WSBattleStartedModel: Codable {
-    let battle: String // tyrant-id
-    let turns: [WSTurnsModel]
-}
-
-// MARK: - ATTACK
-
-struct WSAttackModel: Codable {
-    struct Model: Codable {
-        let user: String // tyrant-id
-        let target: String // tyrant-id
-        let attack: String
-    }
-    let attack: Model
-}
-
 // MARK: - CLEAN
 
 struct WSCleanModel: Codable {
@@ -110,14 +73,14 @@ struct WSVotingModel: Codable {
 struct WSTyrantAttackModel: Codable {
     let name: String
     let fullPP: Int
-    let currentPP: Int
+    var currentPP: Int
 }
 
 struct WSTyrantsModel: Codable {
     let id: String // tyrant-id
     let fullHp: Int
-    let currentHp: Int
-    let attacks: [WSTyrantAttackModel]
+    var currentHp: Int
+    var attacks: [WSTyrantAttackModel]
 }
 
 struct WSFinishedBattleModel: Codable {
@@ -131,4 +94,52 @@ struct WSFinishedBattleModel: Codable {
 struct WSUpdateStateModel: Codable {
     let tyrants: [WSTyrantsModel]
     let turns: [WSTurnsModel]
+}
+
+// MARK: - ATTACK
+
+struct WSAttackModel: Codable {
+    struct Model: Codable {
+        let user: String // tyrant-id
+        let target: String // tyrant-id
+        let attack: String
+    }
+    let attack: Model
+}
+
+// MARK: - BATTLE
+
+struct WSTurnsModel: Codable {
+    let id: String // tyrant-id
+    let asset: String
+    let enemy: Bool
+}
+
+struct WSBattleModel: Codable {
+    let battle: String // tyrant-id
+    let voteEnabled: Bool
+    
+    init(
+        battle: String,
+        voteEnabled: Bool = false
+    ) {
+        self.battle = battle
+        self.voteEnabled = voteEnabled
+    }
+}
+
+struct WSBattleStartedModel: Codable {
+    struct Model: Codable {
+        let toParty: Int
+        let untilDeath: Int
+        
+        enum CodingKeys: String, CodingKey {
+            case toParty = "TO_PARTY"
+            case untilDeath = "UNTIL_DEATH"
+        }
+    }
+    let battle: String // tyrant-id
+    let turns: [WSTurnsModel]
+    var tyrants: [WSTyrantsModel]
+    let voting: Model
 }

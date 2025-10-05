@@ -41,9 +41,17 @@ struct SceneScreen: View {
                     makeImage(imageModel: image, proxy: containerProxy)
                 }
                 
-                if case .voting = viewModel.state, !sessionManager.isAdmin() {
-                    getToPartyView(proxyHeight: containerProxy.size.height)
-                    getUntilDeathView(proxyHeight: containerProxy.size.height)
+                if let model = viewModel.currentVoting {
+                    if sessionManager.isAdmin() {
+                        getVotingAdminView(voting: model.voting)
+                    } else {
+                        getToPartyView(proxyHeight: containerProxy.size.height)
+                        getUntilDeathView(proxyHeight: containerProxy.size.height)
+                    }
+                }
+                
+                if let battle = viewModel.currentBattle {
+                    Text("battle")
                 }
                 
                 if case .error = viewModel.state {
@@ -55,6 +63,27 @@ struct SceneScreen: View {
     }
     
     // MARK: - VOTING
+    
+    @ViewBuilder
+    private func getVotingAdminView(voting: WSVotingModel.Model) -> some View {
+        VStack {
+            Spacer()
+            Text("UNTIL DEATH:")
+                .font(.tiny5(size: 32))
+                .foregroundStyle(.red)
+            Text("\(voting.untilDeath)")
+                .font(.tiny5(size: 50))
+                .foregroundStyle(.red)
+            Spacer()
+            Text("TO PARTY:")
+                .font(.tiny5(size: 32))
+                .foregroundStyle(.cyan)
+            Text("\(voting.toParty)")
+                .font(.tiny5(size: 50))
+                .foregroundStyle(.cyan)
+            Spacer()
+        }
+    }
     
     @ViewBuilder
     private func getToPartyView(proxyHeight: CGFloat) -> some View {
@@ -152,9 +181,25 @@ struct SceneScreen: View {
     @ViewBuilder
     private func makeAdminIdle() -> some View {
         ScrollView {
-            VStack {
+            VStack(spacing: 8) {
                 makeButton(label: "Clean") {
                     viewModel.send(model: WSCleanModel(clean: true, turns: nil))
+                }
+                makeButton(label: "Battle") {
+                    viewModel.send(
+                        model: WSBattleModel(
+                            battle: viewModel.currentQueue.first(where: { $0.enemy == true })?.id ?? "",
+                            voteEnabled: false
+                        )
+                    )
+                }
+                makeButton(label: "Battle with Voting") {
+                    viewModel.send(
+                        model: WSBattleModel(
+                            battle: viewModel.currentQueue.first(where: { $0.enemy == true })?.id ?? "",
+                            voteEnabled: true
+                        )
+                    )
                 }
                 Text("Queue:")
                     .font(.tiny5(size: 32))
@@ -197,18 +242,22 @@ struct SceneScreen: View {
                         .init(.flexible())
                     ]) {
                         ForEach(viewModel.tyrants, id: \.id) { tyrant in
-                            ZStack {
-                                Rectangle()
-                                    .fill(.black)
-                                    .aspectRatio(0.8, contentMode: .fit)
-                                    .offset(x: 4, y: 4)
-                                Rectangle()
-                                    .fill(.white)
-                                    .aspectRatio(0.8, contentMode: .fit)
-                                VStack {
-                                    GifImage(name: tyrant.asset)
-                                    Text(tyrant.id.uppercased())
-                                        .font(.tiny5(size: 16))
+                            HighlightableView {
+                                viewModel.send(model: WSJoinModel(join: tyrant.id, enemy: true))
+                            } content: {
+                                ZStack {
+                                    Rectangle()
+                                        .fill(.black)
+                                        .aspectRatio(0.8, contentMode: .fit)
+                                        .offset(x: 4, y: 4)
+                                    Rectangle()
+                                        .fill(.white)
+                                        .aspectRatio(0.8, contentMode: .fit)
+                                    VStack {
+                                        GifImage(name: tyrant.asset)
+                                        Text(tyrant.id.uppercased())
+                                            .font(.tiny5(size: 16))
+                                    }
                                 }
                             }
                         }

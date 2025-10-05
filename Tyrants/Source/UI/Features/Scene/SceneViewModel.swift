@@ -4,12 +4,11 @@ enum SceneViewState: Equatable {
     case idle
     case image(imageModel: WSImageModel)
     case battle
-    case voting
     case error
     
     static func == (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
-        case (.idle, .idle), (.image, .image), (.battle, .battle), (.voting, .voting), (.error, .error):
+        case (.idle, .idle), (.image, .image), (.battle, .battle), (.error, .error):
             true
         default:
             false
@@ -22,6 +21,8 @@ final class SceneViewModel: ObservableObject {
     @Published var state = SceneViewState.idle
     @Published var tyrants = [TyrantModel]()
     @Published var currentQueue: [WSTurnsModel] = []
+    @Published var currentVoting: WSVotingModel?
+    @Published var currentBattle: WSBattleStartedModel?
     
     let wsService = WebsocketService(urlString: "ws://192.168.18.229:8080/scene/ws")
     
@@ -67,49 +68,57 @@ final class SceneViewModel: ObservableObject {
             case .success(let text):
                 parse(text)
             case .failure:
-                setState(.error)
+                Task { @MainActor in
+                    self.state = .error
+                }
             }
         }
     }
     
     private func parse(_ text: String) {
         print("WS: \(text)")
-        if let decoded = decode(from: WSImageModel.self, with: text) {
-            setState(.image(imageModel: decoded))
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            
+            if let decoded = decode(from: WSImageModel.self, with: text) {
+                state = .image(imageModel: decoded)
+            }
+            
+            if let decoded = decode(from: WSVotingModel.self, with: text) {
+                currentVoting = decoded
+            }
+            
+            if let decoded = decode(from: WSCleanModel.self, with: text) {
+                currentQueue = decoded.turns ?? []
+            }
+            
+            if let decoded = decode(from: WSJoinedModel.self, with: text) {
+                currentQueue = decoded.turns ?? []
+            }
+            
+            if let decoded = decode(from: WSBattleStartedModel.self, with: text) {
+                currentBattle =  decoded
+            }
+            
+            if let decoded = decode(from: WSUpdateStateModel.self, with: text) {
+                updateBattle(decoded)
+            }
         }
-        
-        if let decoded = decode(from: WSVotingModel.self, with: text) {
-            setState(.voting)
-        }
-        
-        if let decoded = decode(from: WSCleanModel.self, with: text) {
-            setQueue(queue: decoded.turns ?? [])
-        }
-        
-        if let decoded = decode(from: WSJoinedModel.self, with: text) {
-            setQueue(queue: decoded.turns ?? [])
+    }
+    
+    private func updateBattle(_ updateState: WSUpdateStateModel) {
+        currentQueue = updateState.turns
+        updateState.tyrants.forEach { updatedTyrant in
+            let battleTyrantIndex = (currentBattle?.tyrants.firstIndex(where: { $0.id == updatedTyrant.id })!)!
+            currentBattle?.tyrants[battleTyrantIndex].currentHp = updatedTyrant.currentHp
+            updatedTyrant.attacks.forEach { updatedAttack in
+                let battleTyrantAttackIndex = (currentBattle?.tyrants[battleTyrantIndex].attacks.firstIndex(where: { $0.name == updatedAttack.name })!)!
+                currentBattle?.tyrants[battleTyrantIndex].attacks[battleTyrantAttackIndex].currentPP = updatedAttack.currentPP
+            }
         }
     }
     
     private func decode<T: Decodable>(from: T.Type, with text: String) -> T? {
         return try? JSONDecoder().decode(T.self, from: Data(text.utf8))
-    }
-    
-    private func setState(_ state: SceneViewState) {
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            withAnimation {
-                self.state = state
-            }
-        }
-    }
-    
-    private func setQueue(queue: [WSTurnsModel]) {
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            withAnimation {
-                self.currentQueue = queue
-            }
-        }
     }
 }
