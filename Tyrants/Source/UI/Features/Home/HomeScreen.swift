@@ -76,9 +76,9 @@ struct HomeScreen: View {
                 )
             )
         }
-        if let tyrant = sessionManager.login?.tyrant {
+        if let _ = sessionManager.login?.tyrant {
             result.append((
-                route: .scene,
+                route: .bag,
                 dto: .init(
                     image: "spirit-icon",
                     title: "SPIRIT",

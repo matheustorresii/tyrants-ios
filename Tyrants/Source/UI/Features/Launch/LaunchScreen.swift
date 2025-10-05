@@ -104,7 +104,7 @@ struct LaunchScreen: View {
                     .scaleEffect(currentIndex == index ? 1.2 : 1)
             }
         }
-        .onReceive(timer) { _ in
+        .onReceive(timer) { @MainActor _ in
             currentIndex = (currentIndex + 1) % text.count
         }
     }
@@ -126,7 +126,7 @@ struct LaunchScreen: View {
                 viewModel.state = .loggedOut
             }
         }
-        .onReceive(timer) { _ in
+        .onReceive(timer) { @MainActor _ in
             currentIndex = (currentIndex + 1) % text.count
         }
     }

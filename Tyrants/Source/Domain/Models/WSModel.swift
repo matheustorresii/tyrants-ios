@@ -4,6 +4,7 @@ import Foundation
 
 struct WSImageModel: Codable {
     let image: String
+    let fill: Bool?
 }
 
 // MARK: - JOIN
@@ -81,7 +82,14 @@ struct WSCleanModel: Codable {
 // MARK: - VOTE
 
 struct WSVoteModel: Codable {
-    let vote: String
+    enum Model: String, Codable {
+        case toParty, untilDeath
+        enum CodingKeys: String, CodingKey {
+            case toParty = "TO_PARTY"
+            case untilDeath = "UNTIL_DEATH"
+        }
+    }
+    let vote: Model
     let user: String // tyrant-id
 }
 

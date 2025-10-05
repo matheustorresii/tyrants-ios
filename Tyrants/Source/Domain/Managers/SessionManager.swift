@@ -6,4 +6,8 @@ final class SessionManager {
     init(login: LoginResponse? = nil) {
         self.login = login
     }
+    
+    func isAdmin() -> Bool {
+        login?.admin == true
+    }
 }

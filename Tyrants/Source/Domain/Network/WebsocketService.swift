@@ -4,7 +4,7 @@ protocol WebsocketServiceProtocol {
     func connect()
     func disconnect()
     func send<T: Encodable>(_ message: T) async throws
-    func listen<T: Decodable>(as type: T.Type, handler: @escaping (Result<T, Error>) -> Void)
+    func listen(handler: @escaping (Result<String, any Error>) -> Void)
 }
 
 final class WebsocketService: WebsocketServiceProtocol {
@@ -25,7 +25,6 @@ final class WebsocketService: WebsocketServiceProtocol {
         task = session.webSocketTask(with: url)
         task?.resume()
         print("WebSocket conectado")
-        listenContinuously()
     }
     
     func disconnect() {
@@ -39,42 +38,21 @@ final class WebsocketService: WebsocketServiceProtocol {
         try await task?.send(.string(jsonString))
     }
     
-    func listen<T>(as type: T.Type, handler: @escaping (Result<T, any Error>) -> Void) where T : Decodable {
-        task?.receive { result in
+    func listen(handler: @escaping (Result<String, any Error>) -> Void) {
+        task?.receive { [weak self] result in
+            guard let self else { return }
             switch result {
             case .failure(let error):
                 handler(.failure(error))
             case .success(let message):
                 switch message {
                 case .string(let text):
-                    do {
-                        let decoded = try JSONDecoder().decode(T.self, from: Data(text.utf8))
-                        handler(.success(decoded))
-                    } catch {
-                        handler(.failure(error))
-                    }
+                    handler(.success(text))
                 default:
                     break
                 }
             }
-            self.listen(as: T.self, handler: handler)
-        }
-    }
-    
-    private func listenContinuously() {
-        task?.receive { [weak self] result in
-            switch result {
-            case .success(let message):
-                switch message {
-                case .string(let text):
-                    print("Recebido: \(text)")
-                default:
-                    break
-                }
-            case .failure(let error):
-                print("Erro websocket: \(error)")
-            }
-            self?.listenContinuously()
+            listen(handler: handler)
         }
     }
 }

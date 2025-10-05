@@ -16,7 +16,7 @@ final class LaunchViewModel: ObservableObject {
     func fetchUser(_ userId: String) {
         state = .loading
         Task { @MainActor in
-            guard let response = try? await self.useCase.execute(request: .init(id: userId)) else {
+            guard let response = try? await self.useCase.execute(request: .init(id: userId.uppercased())) else {
                 state = .error
                 return
             }
