@@ -24,6 +24,7 @@ protocol RequestProtocol {
 enum Request: RequestProtocol {
     case login(req: LoginRequest)
     case news
+    case tyrants
     
     var endpoint: String {
         switch self {
@@ -31,6 +32,8 @@ enum Request: RequestProtocol {
             "/login"
         case .news:
             "/news"
+        case .tyrants:
+            "/tyrants"
         }
     }
     
@@ -38,7 +41,7 @@ enum Request: RequestProtocol {
         switch self {
         case .login:
                 .post
-        case .news:
+        case .news, .tyrants:
                 .get
         }
     }

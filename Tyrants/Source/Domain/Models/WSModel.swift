@@ -25,13 +25,16 @@ struct WSJoinModel: Codable {
 struct WSJoinedModel: Codable {
     let joined: String // tyrant-id
     let enemy: Bool
+    let turns: [WSTurnsModel]?
     
     init(
         joined: String,
-        enemy: Bool = false
+        enemy: Bool = false,
+        turns: [WSTurnsModel]? = nil
     ) {
         self.joined = joined
         self.enemy = enemy
+        self.turns = turns
     }
 }
 
@@ -76,18 +79,14 @@ struct WSAttackModel: Codable {
 
 struct WSCleanModel: Codable {
     let clean: Bool
-    let turns: [WSTurnsModel]
+    let turns: [WSTurnsModel]?
 }
 
 // MARK: - VOTE
 
 struct WSVoteModel: Codable {
     enum Model: String, Codable {
-        case toParty, untilDeath
-        enum CodingKeys: String, CodingKey {
-            case toParty = "TO_PARTY"
-            case untilDeath = "UNTIL_DEATH"
-        }
+        case TO_PARTY, UNTIL_DEATH
     }
     let vote: Model
     let user: String // tyrant-id

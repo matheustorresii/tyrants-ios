@@ -13,7 +13,8 @@ final class NewsViewModel: ObservableObject {
     
     func fetchNews() {
         state = .loading
-        Task { @MainActor in
+        Task { @MainActor [weak self] in
+            guard let self else { return }
             guard let response = try? await self.useCase.execute() else {
                 state = .error
                 return

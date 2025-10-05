@@ -137,8 +137,8 @@ struct BagScreen: View {
                 id: "LITTLE-FLE",
                 name: "Pulga owner",
                 tyrant: .init(
-                    id: "fenryl",
-                    asset: "fenryl",
+                    id: "umbryn",
+                    asset: "umbryn",
                     evolutions: nil,
                     attacks: [
                         .init(

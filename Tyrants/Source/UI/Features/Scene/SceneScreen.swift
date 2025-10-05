@@ -28,20 +28,13 @@ struct SceneScreen: View {
             ZStack {
                 if case .idle = viewModel.state {
                     makeIdle()
+                    if sessionManager.isAdmin() {
+                        Color.black.opacity(0.7).ignoresSafeArea()
+                        makeAdminIdle()
+                    }
+                    FloatingCloseButtonWrapper()
                 } else {
                     Color.black.ignoresSafeArea()
-                }
-                Button {
-                    withAnimation {
-                        viewModel.state = .image(
-                            imageModel: .init(
-                                image: "news-dex-show",
-                                fill: false
-                            )
-                        )
-                    }
-                } label: {
-                    Text("Test state")
                 }
                 
                 if case .image(let image) = viewModel.state, !sessionManager.isAdmin() {
@@ -69,11 +62,11 @@ struct SceneScreen: View {
             Spacer()
             HighlightableView {
                 let vote = WSVoteModel(
-                    vote: .toParty,
+                    vote: .TO_PARTY,
                     user: sessionManager.login?.tyrant?.id ?? ""
                 )
                 viewModel.send(model: vote)
-                currentVote = .toParty
+                currentVote = .TO_PARTY
             } content: {
                 LoopingVideoPlayer(videoName: "TO_PARTY", videoType: "mp4")
                     .ignoresSafeArea()
@@ -88,13 +81,13 @@ struct SceneScreen: View {
             )
         )
         .ignoresSafeArea()
-        .zIndex(currentVote == .toParty ? 10 : 2)
-        .opacity(currentVote != .untilDeath ? 1 : 0.5)
-        .allowsHitTesting(currentVote != .toParty)
+        .zIndex(currentVote == .TO_PARTY ? 10 : 2)
+        .opacity(currentVote != .UNTIL_DEATH ? 1 : 0.5)
+        .allowsHitTesting(currentVote != .TO_PARTY)
     }
     
     private func getToPartyHeight(proxyHeight: CGFloat) -> CGFloat {
-        proxyHeight/(currentVote == .toParty ? 1.47 : currentVote == .untilDeath ? 2.13 : 1.75)
+        proxyHeight/(currentVote == .TO_PARTY ? 1.47 : currentVote == .UNTIL_DEATH ? 2.13 : 1.75)
     }
     
     @ViewBuilder
@@ -102,11 +95,11 @@ struct SceneScreen: View {
         VStack {
             HighlightableView {
                 let vote = WSVoteModel(
-                    vote: .untilDeath,
+                    vote: .UNTIL_DEATH,
                     user: sessionManager.login?.tyrant?.id ?? ""
                 )
                 viewModel.send(model: vote)
-                currentVote = .untilDeath
+                currentVote = .UNTIL_DEATH
             } content: {
                 LoopingVideoPlayer(videoName: "UNTIL_DEATH", videoType: "mp4")
                     .ignoresSafeArea()
@@ -124,13 +117,13 @@ struct SceneScreen: View {
             )
         )
         .ignoresSafeArea()
-        .zIndex(currentVote == .untilDeath ? 10 : 2)
-        .opacity(currentVote != .toParty ? 1 : 0.5)
-        .allowsHitTesting(currentVote != .untilDeath)
+        .zIndex(currentVote == .UNTIL_DEATH ? 10 : 2)
+        .opacity(currentVote != .TO_PARTY ? 1 : 0.5)
+        .allowsHitTesting(currentVote != .UNTIL_DEATH)
     }
     
     private func getUntilDeathHeight(proxyHeight: CGFloat) -> CGFloat {
-        proxyHeight/(currentVote == .untilDeath ? 1.34 : currentVote == .toParty ? 2 : 1.62)
+        proxyHeight/(currentVote == .UNTIL_DEATH ? 1.34 : currentVote == .TO_PARTY ? 2 : 1.62)
     }
     
     // MARK: - IMAGE
@@ -158,7 +151,93 @@ struct SceneScreen: View {
     
     @ViewBuilder
     private func makeAdminIdle() -> some View {
-        
+        ScrollView {
+            VStack {
+                makeButton(label: "Clean") {
+                    viewModel.send(model: WSCleanModel(clean: true, turns: nil))
+                }
+                Text("Queue:")
+                    .font(.tiny5(size: 32))
+                    .foregroundStyle(.white)
+                LazyVGrid(columns: [
+                    .init(.flexible()),
+                    .init(.flexible()),
+                    .init(.flexible())
+                ]) {
+                    ForEach(viewModel.currentQueue, id: \.id) { tyrant in
+                        ZStack {
+                            Rectangle()
+                                .fill(tyrant.enemy == true ? .red : .cyan)
+                                .aspectRatio(0.8, contentMode: .fit)
+                                .offset(x: 4, y: 4)
+                            Rectangle()
+                                .fill(tyrant.enemy == true ? .red : .cyan)
+                                .aspectRatio(0.8, contentMode: .fit)
+                            VStack {
+                                GifImage(name: tyrant.asset)
+                                    .background { Rectangle().fill(.white) }
+                                Text(tyrant.id.uppercased())
+                                    .font(.tiny5(size: 16))
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                    }
+                }
+                Text("Spirits:")
+                    .font(.tiny5(size: 32))
+                    .foregroundStyle(.white)
+                if viewModel.tyrants.isEmpty {
+                    Text("Loading")
+                        .font(.tiny5(size: 32))
+                        .foregroundStyle(.white)
+                } else {
+                    LazyVGrid(columns: [
+                        .init(.flexible()),
+                        .init(.flexible()),
+                        .init(.flexible())
+                    ]) {
+                        ForEach(viewModel.tyrants, id: \.id) { tyrant in
+                            ZStack {
+                                Rectangle()
+                                    .fill(.black)
+                                    .aspectRatio(0.8, contentMode: .fit)
+                                    .offset(x: 4, y: 4)
+                                Rectangle()
+                                    .fill(.white)
+                                    .aspectRatio(0.8, contentMode: .fit)
+                                VStack {
+                                    GifImage(name: tyrant.asset)
+                                    Text(tyrant.id.uppercased())
+                                        .font(.tiny5(size: 16))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(.top, 100)
+            .padding(.horizontal, 24)
+        }
+        .onAppear {
+            viewModel.fetchTyrants()
+        }
+    }
+    
+    @ViewBuilder
+    private func makeButton(label: String, action: (() -> Void)?) -> some View {
+        HighlightableView {
+            action?()
+        } content: {
+            ZStack {
+                Rectangle().fill(.black)
+                    .frame(height: 44)
+                    .offset(x: 4, y: 4)
+                Rectangle().fill(.white)
+                    .frame(height: 44)
+                Text(label)
+                    .font(.tiny5(size: 22))
+            }
+        }
     }
     
     @ViewBuilder
@@ -166,7 +245,6 @@ struct SceneScreen: View {
         LoopingVideoPlayer(videoName: "scene-background", videoType: "mp4")
             .ignoresSafeArea()
         Color.black.opacity(0.5).ignoresSafeArea()
-        FloatingCloseButtonWrapper()
     }
     
     @ViewBuilder
@@ -184,4 +262,17 @@ struct SceneScreen: View {
 
 #Preview {
     SceneScreen()
+        .environment(
+            \.sessionManager,
+             .init(
+                login: .init(
+                    id: "KIWI-TURRET",
+                    name: "Torres",
+                    tyrant: nil,
+                    xp: nil,
+                    items: nil,
+                    admin: true
+                )
+             )
+        )
 }

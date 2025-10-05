@@ -1,6 +1,6 @@
 import Foundation
 
-struct TyrantModel: Codable  {
+struct TyrantModel: Codable {
     let id: String
     let nickname: String?
     let asset: String
