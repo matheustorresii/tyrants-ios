@@ -24,7 +24,7 @@ struct BagScreen: View {
                 ZStack {
                     Color.gray.opacity(0.2).ignoresSafeArea()
                     GeometryReader { proxy in
-                        GifImage(name: "\(tyrant.asset)-background")
+                        LoopingVideoPlayer(videoName: "\(tyrant.id)-background", videoType: "mp4")
                             .frame(width: proxy.size.width + 10)
                         Rectangle()
                             .fill(.gray)
