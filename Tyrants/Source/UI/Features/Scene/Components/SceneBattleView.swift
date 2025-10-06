@@ -8,7 +8,7 @@ enum ControlsViewState {
 
 struct SceneBattleView: View {
     @Environment(\.sessionManager) var sessionManager
-    @State private var controlsState: ControlsViewState = .target(attackName: "Salto")
+    @State private var controlsState: ControlsViewState = .idle
     let battle: WSBattleStartedModel
     
     let didSelectAttack: ((WSAttackModel) -> Void)?
@@ -63,51 +63,61 @@ struct SceneBattleView: View {
         ZStack(alignment: .trailing) {
             makeControlsGradientBackground()
             VStack(alignment: .trailing, spacing: 0) {
-                HighlightableView {
-                    withAnimation {
-                        controlsState = .attack
-                    }
-                } content: {
-                    Text("<  ATTACK")
-                        .foregroundStyle(.white)
-                        .font(.pressStart(size: 22))
-                }
-                .padding(.top, 24)
-                .padding(.bottom, 16)
+                makeTargetBackButton()
                 makeTargetTitle(attackName: attackName)
                 ScrollView {
                     LazyVGrid(columns: [
                         .init(.flexible()),
                         .init(.flexible()),
                     ]) {
-                        ForEach(enemies+allies, id: \.id) { tyrant in
-                            makeTargetItem(tyrant: tyrant) {
-                                let user = if let myTyrant = sessionManager.login?.tyrant.id {
-                                    myTyrant
-                                } else if let firstEnemyTurn = battle.turns.first(where: { $0.enemy == true }),
-                                          let firstEnemy = battle.tyrants.first(where: { $0.id == firstEnemyTurn.id }) {
-                                    firstEnemy.id
-                                } else {
-                                    ""
-                                }
-                                didSelectAttack?(
-                                    .init(
-                                        attack: .init(
-                                            user: user,
-                                            target: tyrant.id,
-                                            attack: attackName
-                                        )
-                                    )
-                                )
-                                withAnimation {
-                                    controlsState = .idle
-                                }
-                            }
-                        }
+                        makeTargetControlsForEach(
+                            attackName: attackName,
+                            enemies: enemies,
+                            allies: allies
+                        )
                     }
                 }
                 .frame(width: 200)
             }
+        }
+    }
+    
+    @ViewBuilder
+    private func makeTargetControlsForEach(
+        attackName: String,
+        enemies: [WSTyrantsModel],
+        allies: [WSTyrantsModel]
+    ) -> some View {
+        ForEach(enemies+allies, id: \.id) { tyrant in
+            makeTargetItem(tyrant: tyrant) {
+                targetItemAction(tyrant: tyrant, attackName: attackName)
+            }
+        }
+    }
+    
+    private func targetItemAction(
+        tyrant: WSTyrantsModel,
+        attackName: String
+    ) {
+        let user = if let myTyrant = sessionManager.login?.tyrant?.id {
+            myTyrant
+        } else if let firstEnemyTurn = battle.turns.first(where: { $0.enemy == true }),
+                  let firstEnemy = battle.tyrants.first(where: { $0.id == firstEnemyTurn.id }) {
+            firstEnemy.id
+        } else {
+            ""
+        }
+        didSelectAttack?(
+            .init(
+                attack: .init(
+                    user: user,
+                    target: tyrant.id,
+                    attack: attackName
+                )
+            )
+        )
+        withAnimation {
+            controlsState = .idle
         }
     }
     
@@ -136,6 +146,21 @@ struct SceneBattleView: View {
                 }
             }
         }
+    }
+    
+    @ViewBuilder
+    private func makeTargetBackButton() -> some View {
+        HighlightableView {
+            withAnimation {
+                controlsState = .attack
+            }
+        } content: {
+            Text("<  ATTACK")
+                .foregroundStyle(.white)
+                .font(.pressStart(size: 22))
+        }
+        .padding(.top, 24)
+        .padding(.bottom, 16)
     }
     
     @ViewBuilder
@@ -234,7 +259,13 @@ struct SceneBattleView: View {
     
     @ViewBuilder
     private func makeIdleControls() -> some View {
-        let isMyTurn = battle.turns.first?.id == sessionManager.login?.tyrant?.id
+        let isMyTurn = if let myTyrant = sessionManager.login?.tyrant?.id {
+            battle.turns.first?.id == myTyrant
+        } else if let firstInTurn = battle.turns.first {
+            firstInTurn.enemy
+        } else {
+            false
+        }
         VStack {
             Spacer()
             HStack {
@@ -278,9 +309,15 @@ struct SceneBattleView: View {
                     let offset = getOffsetForTurn(index: index)
                     GifImage(name: tyrant.asset)
                         .frame(width: 120, height: 120)
-                        .offset(x: offset.x, y: offset.y)
                         .zIndex(getZIndexForTurn(index: index))
                         .shadow(color: .white, radius: 5)
+                        .overlay {
+                            makeHealthBar(
+                                currentHp: tyrant.currentHp,
+                                fullHp: tyrant.fullHp
+                            )
+                        }
+                        .offset(x: offset.x, y: offset.y)
                 }
             }
             .padding(.top, 180)
@@ -309,7 +346,7 @@ struct SceneBattleView: View {
                                 fullHp: tyrant.fullHp
                             )
                         }
-                        .offset(x: offset.x, y: -offset.y)
+                        .offset(x: -offset.x, y: offset.y)
                 }
             }
             .padding(.top, 150)

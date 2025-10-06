@@ -79,16 +79,19 @@ struct SceneScreen: View {
     
     @ViewBuilder
     private func getBattleResultView() -> some View {
-        LoopingVideoPlayer(
-            videoName: viewModel.finishedBattleState == .win ? "WIN" : "DEFEAT",
-            videoType: "mp4"
-        )
-            .ignoresSafeArea()
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                    viewModel.resetAllStates()
+        if let finishedBattleState = viewModel.finishedBattleState {
+            LoopingVideoPlayer(
+                videoName: finishedBattleState == .win ? "WIN" : "DEFEAT",
+                videoType: "mp4"
+            )
+                .ignoresSafeArea()
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                        viewModel.resetAllStates()
+                        currentVote = nil
+                    }
                 }
-            }
+        }
     }
     
     @ViewBuilder
@@ -270,7 +273,13 @@ struct SceneScreen: View {
         ScrollView {
             VStack(spacing: 8) {
                 makeButton(label: "Clean") {
-                    viewModel.send(model: WSCleanModel(clean: true, turns: nil))
+                    viewModel.send(
+                        model: WSCleanModel(
+                            clean: true,
+                            includeAllies: true,
+                            turns: nil
+                        )
+                    )
                 }
                 makeButton(label: "Battle") {
                     viewModel.send(

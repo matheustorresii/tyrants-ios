@@ -140,16 +140,27 @@ final class SceneViewModel: ObservableObject {
     }
     
     private func updateBattle(_ updateState: WSUpdateStateModel) {
-        currentQueue = updateState.turns
+        guard var battle = currentBattle else { return }
+        battle.turns = updateState.turns
+
         updateState.updateState.tyrants.forEach { updatedTyrant in
-            let battleTyrantIndex = (currentBattle?.tyrants.firstIndex(where: { $0.id == updatedTyrant.id })!)!
-            currentBattle?.tyrants[battleTyrantIndex].currentHp = updatedTyrant.currentHp
-            updatedTyrant.attacks.forEach { updatedAttack in
-                let battleTyrantAttackIndex = (currentBattle?.tyrants[battleTyrantIndex].attacks.firstIndex(where: { $0.name == updatedAttack.name })!)!
-                currentBattle?.tyrants[battleTyrantIndex].attacks[battleTyrantAttackIndex].currentPP = updatedAttack.currentPP
+            if let i = battle.tyrants.firstIndex(where: { $0.id == updatedTyrant.id }) {
+                battle.tyrants[i].currentHp = updatedTyrant.currentHp
+                updatedTyrant.attacks.forEach { updatedAttack in
+                    if let j = battle.tyrants[i].attacks.firstIndex(where: { $0.name == updatedAttack.name }) {
+                        battle.tyrants[i].attacks[j].currentPP = updatedAttack.currentPP
+                    }
+                }
             }
         }
-        lastAttackUsed = updateState.updateState.lastAttack
+
+        if let lastAttack = updateState.updateState.lastAttack {
+            lastAttackUsed = .init(attack: lastAttack)
+        }
+
+        withAnimation {
+            currentBattle = battle
+        }
     }
     
     private func decode<T: Decodable>(from: T.Type, with text: String) -> T? {

@@ -130,12 +130,13 @@ struct WSFinishedBattleModel: Codable {
 }
 
 struct WSUpdateStateModel: Codable {
-    struct Model: Codable {
-        let tyrants: [WSTyrantsModel]
-        let lastAttack: WSAttackModel?
-    }
-    let updateState: Model
     let turns: [WSTurnsModel]
+    let updateState: UpdateState
+
+    struct UpdateState: Codable {
+        let lastAttack: WSAttackModel.Model?
+        let tyrants: [WSTyrantsModel]
+    }
 }
 
 // MARK: - ATTACK
@@ -181,7 +182,7 @@ struct WSBattleStartedModel: Codable {
         }
     }
     let battle: String // tyrant-id
-    let turns: [WSTurnsModel]
+    var turns: [WSTurnsModel]
     var tyrants: [WSTyrantsModel]
     let voting: Model?
 }

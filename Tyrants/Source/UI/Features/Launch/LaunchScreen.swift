@@ -17,6 +17,7 @@ struct LaunchScreen: View {
         }
         .foregroundStyle(.green)
         .onAppear {
+            OrientationManager.set(.portrait)
             if let userId = dataPersistenceManager.userId {
                 viewModel.fetchUser(userId)
             } else {
