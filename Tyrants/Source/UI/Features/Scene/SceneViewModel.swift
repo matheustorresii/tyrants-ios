@@ -142,26 +142,38 @@ final class SceneViewModel: ObservableObject {
     private func updateBattle(_ updateState: WSUpdateStateModel) {
         guard var battle = currentBattle else { return }
         battle.turns = updateState.turns
-
-        updateState.updateState.tyrants.forEach { updatedTyrant in
-            if let i = battle.tyrants.firstIndex(where: { $0.id == updatedTyrant.id }) {
-                battle.tyrants[i].currentHp = updatedTyrant.currentHp
-                updatedTyrant.attacks.forEach { updatedAttack in
+        let updatedTyrants = updateState.updateState.tyrants
+        battle.tyrants.removeAll { old in
+            !updatedTyrants.contains(where: { $0.id == old.id })
+        }
+        for updated in updatedTyrants {
+            if let i = battle.tyrants.firstIndex(where: { $0.id == updated.id }) {
+                battle.tyrants[i].currentHp = updated.currentHp
+                battle.tyrants[i].fullHp = updated.fullHp
+                battle.tyrants[i].enemy = updated.enemy
+                battle.tyrants[i].asset = updated.asset
+                for updatedAttack in updated.attacks {
                     if let j = battle.tyrants[i].attacks.firstIndex(where: { $0.name == updatedAttack.name }) {
                         battle.tyrants[i].attacks[j].currentPP = updatedAttack.currentPP
+                    } else {
+                        battle.tyrants[i].attacks.append(updatedAttack)
                     }
                 }
+                battle.tyrants[i].attacks.removeAll { oldAttack in
+                    !updated.attacks.contains(where: { $0.name == oldAttack.name })
+                }
+            } else {
+                battle.tyrants.append(updated)
             }
         }
-
         if let lastAttack = updateState.updateState.lastAttack {
             lastAttackUsed = .init(attack: lastAttack)
         }
-
         withAnimation {
             currentBattle = battle
         }
     }
+
     
     private func decode<T: Decodable>(from: T.Type, with text: String) -> T? {
         return try? JSONDecoder().decode(T.self, from: Data(text.utf8))

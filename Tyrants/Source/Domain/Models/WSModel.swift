@@ -98,9 +98,9 @@ struct WSTyrantAttackModel: Codable {
 
 struct WSTyrantsModel: Codable {
     let id: String // tyrant-id
-    let asset: String
-    let enemy: Bool
-    let fullHp: Int
+    var asset: String
+    var enemy: Bool
+    var fullHp: Int
     var currentHp: Int
     var attacks: [WSTyrantAttackModel]
     

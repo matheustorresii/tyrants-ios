@@ -10,7 +10,6 @@ struct SceneBattleView: View {
     @Environment(\.sessionManager) var sessionManager
     @State private var controlsState: ControlsViewState = .idle
     let battle: WSBattleStartedModel
-    
     let didSelectAttack: ((WSAttackModel) -> Void)?
     
     var body: some View {
@@ -306,10 +305,10 @@ struct SceneBattleView: View {
         HStack {
             ZStack {
                 ForEach(Array(allies.enumerated()), id: \.offset) { index, tyrant in
-                    let offset = getOffsetForTurn(index: index)
+                    let offset = getOffsetForTurn(tyrant: tyrant)
                     GifImage(name: tyrant.asset)
                         .frame(width: 120, height: 120)
-                        .zIndex(getZIndexForTurn(index: index))
+                        .zIndex(offset.z)
                         .shadow(color: .white, radius: 5)
                         .overlay {
                             makeHealthBar(
@@ -334,10 +333,10 @@ struct SceneBattleView: View {
                 ForEach(Array(enemies.enumerated()), id: \.offset) {
                     index,
                     tyrant in
-                    let offset = getOffsetForTurn(index: index)
+                    let offset = getOffsetForTurn(tyrant: tyrant)
                     GifImage(name: tyrant.asset)
                         .frame(width: 150, height: 150)
-                        .zIndex(getZIndexForTurn(index: index))
+                        .zIndex(offset.z)
                         .shadow(color: .white, radius: 5)
                         .scaleEffect(x: -1)
                         .overlay {
@@ -381,7 +380,9 @@ struct SceneBattleView: View {
                             width: (CGFloat(currentHp)/CGFloat(fullHp)) * 100,
                             height: 10
                         )
-                    Spacer()
+                    if currentHp != fullHp {
+                        Spacer()
+                    }
                 }
             }
             .frame(width: 100, height: 10)
@@ -398,21 +399,14 @@ struct SceneBattleView: View {
         }
     }
     
-    private func getOffsetForTurn(index: Int) -> (x: CGFloat, y: CGFloat) {
-        switch index {
-        case 0: (x: 120, y: -20)
-        case 1: (x: 50, y: 50)
-        case 2: (x: -50, y: 0)
-        default: (x: 0, y: -50)
-        }
-    }
-    
-    private func getZIndexForTurn(index: Int) -> Double {
-        switch index {
-        case 0: 2
-        case 1: 1
-        case 2: 2
-        default: 4
+    private func getOffsetForTurn(tyrant: WSTyrantsModel) -> (x: CGFloat, y: CGFloat, z: Double) {
+        let filteredTurns = battle.turns.filter { $0.enemy == tyrant.enemy }
+        let index = filteredTurns.firstIndex(where: { $0.id == tyrant.id })
+        return switch index {
+        case 0: (x: 120, y: -20, z: 2)
+        case 1: (x: 50, y: 50, z: 3)
+        case 2: (x: -50, y: 0, z: 2)
+        default: (x: 0, y: -50, z: 1)
         }
     }
     
