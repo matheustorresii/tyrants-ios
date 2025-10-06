@@ -3,13 +3,15 @@ import SwiftUI
 enum ControlsViewState {
     case idle
     case attack
-    case target
+    case target(attackName: String)
 }
 
 struct SceneBattleView: View {
     @Environment(\.sessionManager) var sessionManager
-    @State private var controlsState: ControlsViewState = .idle
+    @State private var controlsState: ControlsViewState = .target(attackName: "Salto")
     let battle: WSBattleStartedModel
+    
+    let didSelectAttack: ((WSAttackModel) -> Void)?
     
     var body: some View {
         ZStack {
@@ -20,7 +22,10 @@ struct SceneBattleView: View {
             let tyrants = filteredTyrants()
             makeAlliesView(allies: tyrants.allies)
             makeEnemiesView(enemies: tyrants.enemies)
-            makeControls()
+            makeControls(
+                enemies: tyrants.enemies,
+                allies: tyrants.allies
+            )
         }
         .onAppear {
             OrientationManager.set(.landscapeRight)
@@ -31,15 +36,200 @@ struct SceneBattleView: View {
     }
     
     @ViewBuilder
-    private func makeControls() -> some View {
+    private func makeControls(
+        enemies: [WSTyrantsModel],
+        allies: [WSTyrantsModel]
+    ) -> some View {
         switch controlsState {
         case .idle:
             makeIdleControls()
         case .attack:
-            Text("Attack")
-        case .target:
-            Text("Target")
+            makeAttackControls()
+        case .target(let attackName):
+            makeTargetControls(
+                attackName: attackName,
+                enemies: enemies,
+                allies: allies
+            )
         }
+    }
+    
+    @ViewBuilder
+    private func makeTargetControls(
+        attackName: String,
+        enemies: [WSTyrantsModel],
+        allies: [WSTyrantsModel]
+    ) -> some View {
+        ZStack(alignment: .trailing) {
+            makeControlsGradientBackground()
+            VStack(alignment: .trailing, spacing: 0) {
+                HighlightableView {
+                    withAnimation {
+                        controlsState = .attack
+                    }
+                } content: {
+                    Text("<  ATTACK")
+                        .foregroundStyle(.white)
+                        .font(.pressStart(size: 22))
+                }
+                .padding(.top, 24)
+                .padding(.bottom, 16)
+                makeTargetTitle(attackName: attackName)
+                ScrollView {
+                    LazyVGrid(columns: [
+                        .init(.flexible()),
+                        .init(.flexible()),
+                    ]) {
+                        ForEach(enemies+allies, id: \.id) { tyrant in
+                            makeTargetItem(tyrant: tyrant) {
+                                let user = if let myTyrant = sessionManager.login?.tyrant.id {
+                                    myTyrant
+                                } else if let firstEnemyTurn = battle.turns.first(where: { $0.enemy == true }),
+                                          let firstEnemy = battle.tyrants.first(where: { $0.id == firstEnemyTurn.id }) {
+                                    firstEnemy.id
+                                } else {
+                                    ""
+                                }
+                                didSelectAttack?(
+                                    .init(
+                                        attack: .init(
+                                            user: user,
+                                            target: tyrant.id,
+                                            attack: attackName
+                                        )
+                                    )
+                                )
+                                withAnimation {
+                                    controlsState = .idle
+                                }
+                            }
+                        }
+                    }
+                }
+                .frame(width: 200)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func makeTargetItem(
+        tyrant: WSTyrantsModel,
+        didSelect: @escaping (() -> Void)
+    ) -> some View {
+        HighlightableView {
+            didSelect()
+        } content: {
+            ZStack {
+                Rectangle()
+                    .fill(tyrant.enemy == true ? .red : .cyan)
+                    .aspectRatio(0.8, contentMode: .fit)
+                    .offset(x: 4, y: 4)
+                Rectangle()
+                    .fill(tyrant.enemy == true ? .red : .cyan)
+                    .aspectRatio(0.8, contentMode: .fit)
+                VStack {
+                    GifImage(name: tyrant.asset)
+                        .background { Rectangle().fill(.white) }
+                    Text(tyrant.id.uppercased())
+                        .font(.tiny5(size: 16))
+                        .foregroundStyle(.white)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func makeTargetTitle(attackName: String) -> some View {
+        (
+            Text("Usar")
+                .font(.pressStart(size: 16))
+            + Text(" \(attackName.uppercased()) ")
+                .font(.tiny5(size: 24))
+            + Text("em:")
+                .font(.pressStart(size: 16))
+         )
+        .foregroundStyle(.white)
+        .overlay(
+            Rectangle()
+                .fill(.white)
+                .frame(height: 1),
+            alignment: .bottom
+        )
+    }
+    
+    @ViewBuilder
+    private func makeAttackControls() -> some View {
+        ZStack(alignment: .trailing) {
+            makeControlsGradientBackground()
+            VStack(alignment: .trailing) {
+                HighlightableView {
+                    withAnimation {
+                        controlsState = .idle
+                    }
+                } content: {
+                    Text("<  ATTACK")
+                        .foregroundStyle(.white)
+                        .font(.pressStart(size: 22))
+                }
+                .padding(.top, 24)
+                Spacer()
+                ForEach(getAttacks(), id: \.name) { attack in
+                    chooseAttackView(attack: attack)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func chooseAttackView(attack: WSTyrantAttackModel) -> some View {
+        HighlightableView {
+            withAnimation {
+                controlsState = .target(attackName: attack.name)
+            }
+        } content: {
+            HStack {
+                Text(attack.name)
+                    .font(.pressStart(size: 20))
+                Text("(\(attack.currentPP)/\(attack.fullPP))")
+                    .font(.pressStart(size: 12))
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .background {
+                Rectangle()
+                    .fill(getAccentColor())
+                    .offset(x: 4, y: 4)
+                Rectangle()
+                    .fill(.white)
+            }
+        }
+    }
+    
+    private func getAttacks() -> [WSTyrantAttackModel] {
+        if let userTyrantId = sessionManager.login?.tyrant?.id,
+           let userTyrant = battle.tyrants.first(where: { $0.id == userTyrantId }) {
+            return userTyrant.attacks
+        }
+        if let firstEnemyTurn = battle.turns.first(where: { $0.enemy == true }),
+           let firstEnemy = battle.tyrants.first(where: { $0.id == firstEnemyTurn.id }) {
+            return firstEnemy.attacks
+        }
+        return []
+    }
+    
+    @ViewBuilder
+    private func makeControlsGradientBackground() -> some View {
+        LinearGradient(
+            colors: [
+                Color.black.opacity(0.9),
+                Color.black.opacity(0.8),
+                Color.black.opacity(0),
+                Color.black.opacity(0)
+            ],
+            startPoint: .trailing,
+            endPoint: .leading
+        )
+        .ignoresSafeArea()
     }
     
     @ViewBuilder
@@ -50,7 +240,7 @@ struct SceneBattleView: View {
             HStack {
                 Spacer()
                 HighlightableView {
-                    print("oi")
+                    controlsState = .attack
                 } content: {
                     ZStack {
                         Rectangle()
@@ -58,7 +248,7 @@ struct SceneBattleView: View {
                             .offset(x: 4)
                         Rectangle()
                             .rotation(.degrees(45))
-                            .fill((battle.voting?.toParty ?? 0) >= (battle.voting?.untilDeath ?? 0) ? .cyan : .red)
+                            .fill(getAccentColor())
                         Text(isMyTurn ? "ATTACK" : "WAIT FOR YOUR TURN")
                             .multilineTextAlignment(.center)
                             .foregroundStyle(.white)
@@ -74,6 +264,10 @@ struct SceneBattleView: View {
                 .allowsHitTesting(isMyTurn)
             }
         }
+    }
+    
+    private func getAccentColor() -> Color {
+        (battle.voting?.toParty ?? 0) >= (battle.voting?.untilDeath ?? 0) ? .cyan : .red
     }
     
     @ViewBuilder
@@ -250,6 +444,16 @@ struct SceneBattleView: View {
                         name: "Salto",
                         fullPP: 10,
                         currentPP: 9
+                    ),
+                    .init(
+                        name: "Nome Maior",
+                        fullPP: 10,
+                        currentPP: 9
+                    ),
+                    .init(
+                        name: "Z",
+                        fullPP: 10,
+                        currentPP: 9
                     )
                 ]
             ),
@@ -351,7 +555,11 @@ struct SceneBattleView: View {
         ],
         voting: .init(toParty: 3, untilDeath: 0)
     )
-    SceneBattleView(battle: model)
+    SceneBattleView(
+        battle: model,
+        didSelectAttack: { model in
+            print("\(model.attack.user) usou \(model.attack.attack) em \(model.attack.target)")
+    })
         .environment(
             \.sessionManager,
              .init(

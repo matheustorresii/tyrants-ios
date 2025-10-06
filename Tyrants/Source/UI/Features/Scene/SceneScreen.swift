@@ -55,14 +55,73 @@ struct SceneScreen: View {
                 
                 if let battle = viewModel.currentBattle {
                     ZStack {
-                        SceneBattleView(battle: battle)
+                        SceneBattleView(
+                            battle: battle,
+                            didSelectAttack: { model in
+                                viewModel.send(model: model)
+                            }
+                        )
+                        getLastAttackView()
                         getVotingResultView(battle: battle)
+                        getBattleResultView()
                     }
                 }
                 
                 if case .error = viewModel.state {
                     makeError()
                     FloatingCloseButtonWrapper()
+                }
+            }
+        }
+    }
+    
+    // MARK: - BATTLE
+    
+    @ViewBuilder
+    private func getBattleResultView() -> some View {
+        LoopingVideoPlayer(
+            videoName: viewModel.finishedBattleState == .win ? "WIN" : "DEFEAT",
+            videoType: "mp4"
+        )
+            .ignoresSafeArea()
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                    viewModel.resetAllStates()
+                }
+            }
+    }
+    
+    @ViewBuilder
+    private func getLastAttackView() -> some View {
+        if let lastAttackUsed = viewModel.lastAttackUsed {
+            ZStack {
+                Color.black.opacity(0.8).ignoresSafeArea()
+                LinearGradient(
+                    colors: [
+                        Color.black.opacity(0.2),
+                        Color.black,
+                        Color.black.opacity(0.2)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 180)
+                .ignoresSafeArea()
+                VStack(spacing: 8) {
+                    GifImage(name: lastAttackUsed.attack.user)
+                        .frame(width: 125, height: 125)
+                        .shadow(color: .white, radius: 5)
+                    
+                    Text("\(lastAttackUsed.attack.user.capitalized) usou \(lastAttackUsed.attack.attack.uppercased()) em \(lastAttackUsed.attack.target.capitalized)")
+                        .foregroundStyle(.white)
+                        .font(.pressStart(size: 16))
+                }
+            }
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    withAnimation {
+                        viewModel.lastAttackUsed = nil
+                    }
                 }
             }
         }
@@ -85,7 +144,7 @@ struct SceneScreen: View {
                 )
             )
             .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                     viewModel.currentVoting = nil
                 }
             }

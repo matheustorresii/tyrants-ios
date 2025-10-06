@@ -51,7 +51,18 @@ struct WSLeftModel: Codable {
 
 struct WSCleanModel: Codable {
     let clean: Bool
+    let includeAllies: Bool?
     let turns: [WSTurnsModel]?
+    
+    init(
+        clean: Bool,
+        includeAllies: Bool? = nil,
+        turns: [WSTurnsModel]? = nil
+    ) {
+        self.clean = clean
+        self.includeAllies = includeAllies
+        self.turns = turns
+    }
 }
 
 // MARK: - VOTE
@@ -119,7 +130,11 @@ struct WSFinishedBattleModel: Codable {
 }
 
 struct WSUpdateStateModel: Codable {
-    let tyrants: [WSTyrantsModel]
+    struct Model: Codable {
+        let tyrants: [WSTyrantsModel]
+        let lastAttack: WSAttackModel?
+    }
+    let updateState: Model
     let turns: [WSTurnsModel]
 }
 

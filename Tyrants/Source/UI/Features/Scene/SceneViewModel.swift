@@ -23,6 +23,8 @@ final class SceneViewModel: ObservableObject {
     @Published var currentQueue: [WSTurnsModel] = []
     @Published var currentVoting: WSVotingModel?
     @Published var currentBattle: WSBattleStartedModel?
+    @Published var lastAttackUsed: WSAttackModel?
+    @Published var finishedBattleState: WSFinishedBattleModel.Model?
     
     let wsService = WebsocketService(urlString: "ws://192.168.18.229:8080/scene/ws")
     
@@ -61,6 +63,17 @@ final class SceneViewModel: ObservableObject {
                 return
             }
             tyrants = response
+        }
+    }
+    
+    func resetAllStates() {
+        withAnimation {
+            currentQueue = .init()
+            currentVoting = nil
+            currentBattle = nil
+            lastAttackUsed = nil
+            finishedBattleState = nil
+            state = .idle
         }
     }
     
@@ -118,13 +131,17 @@ final class SceneViewModel: ObservableObject {
                 if let decoded = self.decode(from: WSUpdateStateModel.self, with: text) {
                     self.updateBattle(decoded)
                 }
+                
+                if let decoded = self.decode(from: WSFinishedBattleModel.self, with: text) {
+                    self.finishedBattleState = decoded.updateState
+                }
             }
         }
     }
     
     private func updateBattle(_ updateState: WSUpdateStateModel) {
         currentQueue = updateState.turns
-        updateState.tyrants.forEach { updatedTyrant in
+        updateState.updateState.tyrants.forEach { updatedTyrant in
             let battleTyrantIndex = (currentBattle?.tyrants.firstIndex(where: { $0.id == updatedTyrant.id })!)!
             currentBattle?.tyrants[battleTyrantIndex].currentHp = updatedTyrant.currentHp
             updatedTyrant.attacks.forEach { updatedAttack in
@@ -132,6 +149,7 @@ final class SceneViewModel: ObservableObject {
                 currentBattle?.tyrants[battleTyrantIndex].attacks[battleTyrantAttackIndex].currentPP = updatedAttack.currentPP
             }
         }
+        lastAttackUsed = updateState.updateState.lastAttack
     }
     
     private func decode<T: Decodable>(from: T.Type, with text: String) -> T? {
